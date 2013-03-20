@@ -6,17 +6,17 @@ class Spree::Admin::ProductDatasheetsController < Spree::Admin::ResourceControll
                               page(params[:page] || 1).
                               per(params[:per_page] || 30)
   end
-  
+
   def upload
   end
-  
+
   def edit
   end
-  
+
   def destroy
     @product_datasheet = Spree::ProductDatasheet.find(params[:id])
     @product_datasheet.deleted_at = Time.now
-    
+
     if @product_datasheet.save
       flash.notice = Spree.t("notice_messages.product_datasheet_deleted")
     else
@@ -24,15 +24,15 @@ class Spree::Admin::ProductDatasheetsController < Spree::Admin::ResourceControll
     end
     redirect_to admin_product_datasheets_path(:format => :html)
   end
-  
+
   def clone
   end
-  
+
   def create
     @product_datasheet = Spree::ProductDatasheet.new(permitted_resource_params)
     @product_datasheet.user = spree_current_user
-    
-    if @product_datasheet.save && @product_datasheet.xls.original_filename =~ /\.(xlsx?|ods)$/
+
+    if @product_datasheet.save && @product_datasheet.xls.original_filename =~ /\.csv$/
       if (defined? Delayed::Job) or (defined? Sidekiq)
         @product_datasheet.delay.perform
       else
