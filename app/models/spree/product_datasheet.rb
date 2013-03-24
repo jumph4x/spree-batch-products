@@ -18,7 +18,7 @@ module Spree
 
     has_attached_file :xls, :url => "/uploads/product_datasheets/:id/:filename", 
                       :path => ":rails_root/public/uploads/product_datasheets/:id/:filename"
-    
+
     validates_attachment_presence :xls
     validates_attachment_content_type :xls, :content_type => ['text/csv', 'text/plain']
     ####################
@@ -27,51 +27,34 @@ module Spree
     # Sets up statistic variables and separates the headers row from the rest of the spreadsheet
     # Iterates row-by-row to populate a hash of { :attribute => :value } pairs, uses this hash to create or update records accordingly
     ####################
-    def perform
-      ####################
-      # Creating Variants:
-      #   1) First cell of headers row must define 'id' as the search key
-      #   2) The headers row must define 'product_id' as an attribute to be updated
-      #   3) The row containing the values must leave 'id' blank, and define a valid id for 'product_id'
-      #
-      # Creating Products:
-      #   1) First cell of headers row must define 'id' as the search key
-      #   2) The row containing the values must leave 'id' blank, and define a valid id for 'product_id'
-      #
-      # Updating Products:
-      #   1) The search key (first cell of headers row) must be present as a column name on the Products table
-      #
-      # Updating Variants:
-      #   1) The search key must be present as a column name on the Variants table.
-      ####################
 
-      begin
-        before_batch_loop
-        idx = 0
-        CSV.foreach(xls.path) do |row|
-          if idx == 0
-            @headers = []
-            row.each do |key|
-              method = "#{key}="
-              if Product.new.respond_to?(method) or Variant.new.respond_to?(method)
-                @headers << key
-              else
-                @headers << nil
-              end
+    begin
+      before_batch_loop
+
+      idx = 0
+      csv_enumerator do |row|
+        if idx == 0
+          @headers = []
+          row.each do |key|
+            method = "#{key}="
+            if Product.new.respond_to?(method) or Variant.new.respond_to?(method)
+              @headers << key
+            else
+              @headers << nil
             end
             @primary_key = @headers[0]
-          else
-            handle_line(row, idx)
-            sleep 0
           end
-          idx += 1
+        else
+          handle_line(row, idx)
+          sleep 0
         end
-        self.update_attribute(:processed_at, Time.now)
-
-      ensure
-        after_batch_loop
-        after_processing
+        idx += 1
       end
+      self.update_attribute(:processed_at, Time.now)
+
+    ensure
+      after_batch_loop
+      after_processing
     end
 
     def handle_line(row, idx)
@@ -101,6 +84,14 @@ module Spree
         self.touched_product_ids += products.map(&:id)
       else
         @queries_failed = @queries_failed + 1
+      end
+    end
+
+    def csv_enumerator(&block)
+      if self.class.attachment_definitions[:xls][:storage] == :s3
+        CSV.parse(open xls.url).each(&block)
+      else
+        CSV.foreach(xls.path, {}, &block)
       end
     end
 
