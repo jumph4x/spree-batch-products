@@ -18,11 +18,14 @@ class Spree::Admin::ProductDatasheetsController < Spree::Admin::ResourceControll
     @product_datasheet.deleted_at = Time.now
 
     if @product_datasheet.save
-      flash.notice = Spree.t("notice_messages.product_datasheet_deleted")
+      flash[:success] = Spree.t("notice_messages.product_datasheet_deleted")
     else
       @product_datasheet.errors.add_to_base('Failed to delete the product datasheet')
     end
-    redirect_to admin_product_datasheets_path(:format => :html)
+    respond_with(@product_datasheet) do |format|
+      format.html { redirect_to admin_product_datasheets_path }
+      format.js   { render :partial => "spree/admin/shared/destroy" }
+    end
   end
 
   def clone
