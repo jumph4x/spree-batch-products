@@ -28,13 +28,14 @@ Installation
 ============
 
 To incorporate the BatchProducts extension into your Spree application, add the following to your Gemfile:
-`gem 'spree_batch_products', :git => 'git://github.com/minustehbare/spree-batch-products.git'`
+`gem 'spree_batch_products', github: 'jumph4x/spree-batch-products', branch: '3-0-stable'`
+
 
 There are a number of different branches corresponding to different Spree versions.  The extension does not change much between branches other than the spree-core dependency.  Use the `:branch => <branch name>` directive if you are not working with edge Spree and instead are using an older version.
 
 Follow it up with a `bundle install`.
 
-When your bundle has finished, mirror the assets and migrations into your migrations folder with `rake spree_batch_products:install` and then run `rake db:migrate`.  This will create the ProductDatasheet(s) model and database table along with the handy statistic fields listed above.
+When your bundle has finished, mirror the assets and migrations into your migrations folder with `rails g spree_batch_products:install` and then run `rake db:migrate`.  This will create the ProductDatasheet(s) model and database table along with the handy statistic fields listed above.
 
 If you are using DelayedJob, the Jobs table should already be created, or it will be created when you install DelayedJob.
 
@@ -47,7 +48,7 @@ ProductDatasheets rely on two assumptions: the first row defines the attributes 
 
 Consider a simple datasheet:
 
-![](/minustehbare/spree-batch-products/raw/master/example/sample_spreadsheet.png)
+![](/jumph4x/spree-batch-products/raw/master/example/sample_spreadsheet.png)
 
 Notice that the first cell defines the search attribute as `:sku`.  Since this attribute is exclusive to the Variant model, it is a 'collection' of variants that we are updating.  The second attribute that is defined is `:price`.  
 
@@ -60,7 +61,7 @@ If a query returns no records, or if the search attribute does not belong to Var
 Record Creation
 ---------------
 
-To create Product records through a ProductDatasheet the first row must define `:id` as the search attribute.  Any row that you want a record created for should have an empty value for the `:id` column; otherwise, Product records will be located by the value supplied.  Record creation succeeds so long as the `:name`, `:slug`, and `:price` attributes on each row are defined.
+To create Product records through a ProductDatasheet the first row must define `:id` as the search attribute.  Any row that you want a record created for should have an empty value for the `:id` column; otherwise, Product records will be located by the value supplied.  Record creation succeeds so long as the `:name`, `:slug`, `:price` and `shipping_category_id` attributes on each row are defined.
 
 To create Variant records, follow the same style as creating a Product.  Define `:id` as the search attribute, leave the value cell of the `:id` column empty to create a record for that row, and ensure that you supply values for `:price` and `:product_id`.  This will create Variant records and save them.  The use-case for this is very limited since the distinguishing feature of Variant records are OptionTypes and OptionValues.  For simplicity, those details are left to be done programatically because of the complexity that record linking introduces.
 

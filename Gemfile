@@ -9,7 +9,7 @@ group :assets do
 end
 
 gemspec
-gem 'spree_auth_devise', git: 'git://github.com/spree/spree_auth_devise.git', branch: '2-4-stable'
+gem 'spree_auth_devise', git: 'git://github.com/spree/spree_auth_devise.git', branch: '3-0-stable'
 
 group :test do
   gem 'factory_girl', '~> 4.2'

@@ -1,56 +1,62 @@
-<%= render :partial => 'spree/admin/shared/product_sub_menu' %>
-
 <% content_for :page_title do %>
   <%= "#{Spree.t("actions.listing")} #{Spree.t("product_datasheets")}" %>
 <% end %>
 
 <% content_for :page_actions do %>
-    <li id="new_product_datasheet_link">
-      <%= button_link_to Spree.t("upload_product_datasheet"), new_admin_product_datasheet_url, { :remote => true, :icon => 'icon-plus', 'data-update' => 'new_product_datasheet', :id => 'new_product_datasheet_link' } %>
-    </li>
+  <span>
+    <%= button_link_to Spree.t(:upload_product_datasheet), spree.new_admin_product_datasheet_path, 
+        { :remote => true, :icon => 'icon-plus', 'data-update' => 'new_product_datasheet', 
+          :id => 'new_product_datasheet_link' } %>
+  </span>
 <% end %>
 
 <div id="new_product_datasheet"></div>
-
-<table class="index">
-<thead>
-  <tr data-hook="admin_product_datasheets_index_headers">
-      <th><%= Spree.t("datasheet_name") %></th>
-      <th><%= Spree.t("products_not_found") %></th>
-      <th><%= Spree.t("products_found") %></th>
-      <th><%= Spree.t("products_failed_to_update") %></th>
-      <th><%= Spree.t("successful_updates") %></th>
-      <th><%= Spree.t("file_size") %></th>
-      <th><%= Spree.t("date_processed") %></th>
-      <th><%= Spree.t('uploaded_by_user') %></th>
-      <th class="actions"></th>
-  </tr>
-</thead>
-<% @product_datasheets.each do |datasheet| %>
-<tbody>
-  <tr <%= 'style="color:red;"' if !datasheet.processed? %> id="<%= dom_id datasheet %>" data-hook="admin_product_datasheets_index_rows">
-    <%- locals = {:datasheet => datasheet} %>
-      <td><%= link_to datasheet.spreadsheet_file_name, datasheet.spreadsheet.url %></td>
-      <td><%= datasheet.failed_queries -%></td>
-      <td><%= datasheet.matched_records -%></td>
-      <td><%= datasheet.failed_records -%></td>
-      <td><%= datasheet.updated_records -%></td>
-      <td><%= number_to_human_size(datasheet.spreadsheet_file_size) %></td>
-      <% if datasheet.processed_at %>
-        <td><%= datasheet.processed_at %></td>
-      <% else %>
-        <td>Pending</td>
-      <% end %>
-      <td><%= datasheet.user ? link_to(datasheet.user.email, admin_user_path(datasheet.user)) : 'undefined' %></td>
-    <td class="actions" data-hook="admin_product_datasheets_index_row_actions">
-      <% if datasheet.product_errors.any? %>
-        <%= link_to(Spree.t(:see_errors), '#', :onclick => "jAlert('<div style=\"max-height:480px; overflow-y: scroll;\"><ul><li>#{j datasheet.product_errors.join('</li><li>')}</li></ul></div>', '#{Spree.t(:list_of_errors_in, :file_name => j(datasheet.spreadsheet_file_name))}'); return false;") -%>
-      <% elsif !(datasheet.deleted? or datasheet.processed?) %>
-        <%= link_to_delete datasheet, {:url => admin_product_datasheet_path(datasheet), :no_text => true} %>
-      <% end %>
-    </td>
-  </tr>
-</tbody>
-<% end %>  
-</table>
-<%= paginate @product_datasheets %>
+<% if @product_datasheets.present? %>
+  <table class="table">
+    <thead>
+      <tr data-hook="admin_product_datasheets_index_headers">
+          <th><%= Spree.t("datasheet_name") %></th>
+          <th><%= Spree.t("products_not_found") %></th>
+          <th><%= Spree.t("products_found") %></th>
+          <th><%= Spree.t("products_failed_to_update") %></th>
+          <th><%= Spree.t("successful_updates") %></th>
+          <th><%= Spree.t("file_size") %></th>
+          <th><%= Spree.t("date_processed") %></th>
+          <th><%= Spree.t('uploaded_by_user') %></th>
+          <th class="actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+    <% @product_datasheets.each do |datasheet| %>
+      <tr <%= 'style="color:red;"' if !datasheet.processed? %> id="<%= dom_id datasheet %>" data-hook="admin_product_datasheets_index_rows">
+        <%- locals = {:datasheet => datasheet} %>
+          <td><%= link_to datasheet.spreadsheet_file_name, datasheet.spreadsheet.url %></td>
+          <td><%= datasheet.failed_queries -%></td>
+          <td><%= datasheet.matched_records -%></td>
+          <td><%= datasheet.failed_records -%></td>
+          <td><%= datasheet.updated_records -%></td>
+          <td><%= number_to_human_size(datasheet.spreadsheet_file_size) %></td>
+          <% if datasheet.processed_at %>
+            <td><%= datasheet.processed_at %></td>
+          <% else %>
+            <td>Pending</td>
+          <% end %>
+          <td><%= datasheet.user ? link_to(datasheet.user.email, admin_user_path(datasheet.user)) : 'undefined' %></td>
+        <td class="actions" data-hook="admin_product_datasheets_index_row_actions">
+          <% if datasheet.product_errors.any? %>
+              <button type="button" class="btn btn-default" data-toggle="modal" data-target="#<%= dom_id(datasheet) %>_errors"><%= Spree.t(:see_errors) %></button>
+              <%= render partial: 'modal_window_with_errors', locals: {datasheet: datasheet} %>
+          <% elsif !(datasheet.deleted? or datasheet.processed?) %>
+            <%= link_to_delete datasheet, {:url => admin_product_datasheet_path(datasheet), :no_text => true} %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+  <%= paginate @product_datasheets %>
+<% else %>
+  <div class="alert alert-info no-objects-found">
+    <%= Spree.t(:no_resource_found, resource: plural_resource_name(Spree::ProductDatasheet)) %>
+  </div>
+<% end %>
