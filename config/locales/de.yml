@@ -1,0 +1,20 @@
+de:
+  spree:
+    admin:
+      tab:
+        batch_updates: "Massenupdate"
+    product_datasheets: "Produktdateien"
+    new_product_datasheet: "Neue Produktdatei"
+    datasheet_name: "Produktdateiname"
+    file_size: "Dateigröße"
+    date_processed: "Bearbeitungsdtaum"
+    product_datasheet: "Produktdatei"
+    actions:
+      upload: "Hochladen"
+    upload_product_datasheet: "Produktdatei hochladen"
+    upload_a_product_datasheet: "Eine Produktdatei hochladen"
+    notice_messages:
+      product_datasheet_saved: "Produkdatei gespeichert"
+    uploaded_by_user: "Hochgeladen von"
+    see_errors: "Siehe Fehlermelduungen"
+    list_of_errors_in: "Liste der Fehlermeldungen %{file_name}"
