@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.requirements << 'none'
 
   s.add_dependency 'spree_core', '~> 2.4'
+  s.add_dependency 'spree_backend', '~> 2.4'
   s.add_dependency 'fastercsv', '~> 1.5.5'
   s.add_dependency 'batch_factory'
 

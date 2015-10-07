@@ -21,40 +21,46 @@ module Spree
 
     validates_attachment_presence :xls
     validates_attachment_content_type :xls, :content_type => ['text/csv', 'text/plain']
+
+		scope :not_deleted, -> { where("spree_product_datasheets.deleted_at is NULL") }
+		scope :deleted, -> { where("spree_product_datasheets.deleted_at is NOT NULL") }
+
     ####################
     # Main logic of extension
     # Uses the spreadsheet to define the bounds for iteration (from first used column <inclusive> to first unused column <exclusive>)
     # Sets up statistic variables and separates the headers row from the rest of the spreadsheet
     # Iterates row-by-row to populate a hash of { :attribute => :value } pairs, uses this hash to create or update records accordingly
     ####################
+    def perform
 
-    begin
-      before_batch_loop
+      begin
+        before_batch_loop
 
-      idx = 0
-      csv_enumerator do |row|
-        if idx == 0
-          @headers = []
-          row.each do |key|
-            method = "#{key}="
-            if Product.new.respond_to?(method) or Variant.new.respond_to?(method)
-              @headers << key
-            else
-              @headers << nil
+        idx = 0
+        csv_enumerator do |row|
+          if idx == 0
+            @headers = []
+            row.each do |key|
+              method = "#{key}="
+              if Product.new.respond_to?(method) or Variant.new.respond_to?(method)
+                @headers << key
+              else
+                @headers << nil
+              end
+              @primary_key = @headers[0]
             end
-            @primary_key = @headers[0]
+          else
+            handle_line(row, idx)
+            sleep 0
           end
-        else
-          handle_line(row, idx)
-          sleep 0
+          idx += 1
         end
-        idx += 1
-      end
-      self.update_attribute(:processed_at, Time.now)
+        self.update_attribute(:processed_at, Time.now)
 
-    ensure
-      after_batch_loop
-      after_processing
+      ensure
+        after_batch_loop
+        after_processing
+      end
     end
 
     def handle_line(row, idx)
