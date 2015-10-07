@@ -16,9 +16,8 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.requirements << 'none'
 
-  s.add_dependency 'spree_core', '~> 2.1'
+  s.add_dependency 'spree_core', '~> 2.4'
   s.add_dependency 'fastercsv', '~> 1.5.5'
-  s.add_dependency 'rubyzip', '0.9.9'
   s.add_dependency 'batch_factory'
 
   s.add_development_dependency 'factory_girl'
