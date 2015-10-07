@@ -16,4 +16,5 @@ group :test do
   gem 'factory_girl', '~> 4.2'
   gem 'database_cleaner'
   gem 'minitest'
+  gem 'test-unit'
 end
