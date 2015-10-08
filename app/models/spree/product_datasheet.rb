@@ -16,11 +16,11 @@ module Spree
     after_find :setup_statistics
     after_initialize :setup_statistics
 
-    has_attached_file :xls, :url => "/uploads/product_datasheets/:id/:filename", 
-                      :path => ":rails_root/public/uploads/product_datasheets/:id/:filename"
+    has_attached_file :spreadsheet, :url => "/uploads/product_datasheets/:id/:filename", 
+                                    :path => ":rails_root/public/uploads/product_datasheets/:id/:filename"
 
-    validates_attachment_presence :xls
-    validates_attachment_content_type :xls, :content_type => ['text/csv', 'text/plain']
+    validates_attachment_presence :spreadsheet
+    validates_attachment_content_type :spreadsheet, :content_type => ['text/csv', 'text/plain']
 
 		scope :not_deleted, -> { where("spree_product_datasheets.deleted_at is NULL") }
 		scope :deleted, -> { where("spree_product_datasheets.deleted_at is NOT NULL") }
@@ -50,11 +50,12 @@ module Spree
               @primary_key = @headers[0]
             end
           else
-            handle_line(row, idx)
+            handle_line row, idx
             sleep 0
           end
           idx += 1
         end
+
         self.update_attribute(:processed_at, Time.now)
 
       ensure
@@ -63,12 +64,14 @@ module Spree
       end
     end
 
-    def handle_line(row, idx)
+    def handle_line row, idx
       attr_hash = {}
       lookup_value = (row[0].is_a?(Float) ? row[0].to_i : row[0]).to_s
 
-      row.each_with_index do |value, i|
-        next unless value and key = @headers[i] # ignore cell if it has no value
+      row.each_with_index do |raw_value, i|
+        next unless raw_value and key = @headers[i] # ignore cell if it has no value
+
+        value = (raw_value == 'nil') ? nil : raw_value
         attr_hash[key] = value
       end
 
@@ -94,10 +97,10 @@ module Spree
     end
 
     def csv_enumerator(&block)
-      if self.class.attachment_definitions[:xls][:storage] == :s3
-        CSV.parse(open xls.url).each(&block)
+      if self.class.attachment_definitions[:spreadsheet][:storage] == :s3
+        CSV.parse(open spreadsheet.url).each(&block)
       else
-        CSV.foreach(xls.path, {}, &block)
+        CSV.foreach(spreadsheet.path, {}, &block)
       end
     end
 

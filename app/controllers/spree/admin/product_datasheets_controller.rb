@@ -32,7 +32,7 @@ class Spree::Admin::ProductDatasheetsController < Spree::Admin::ResourceControll
     @product_datasheet = Spree::ProductDatasheet.new(permitted_resource_params)
     @product_datasheet.user = spree_current_user
 
-    if @product_datasheet.save && @product_datasheet.xls.original_filename =~ /\.csv$/
+    if @product_datasheet.save && @product_datasheet.spreadsheet.original_filename =~ /\.csv$/
       if (defined? Delayed::Job) or (defined? Sidekiq)
         @product_datasheet.delay.perform
       else
