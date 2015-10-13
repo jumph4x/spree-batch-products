@@ -427,6 +427,3 @@ DEPENDENCIES
   sqlite3
   test-unit
   yui-compressor
-
-BUNDLED WITH
-   1.10.6
