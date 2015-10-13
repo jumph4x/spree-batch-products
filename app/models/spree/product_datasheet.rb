@@ -3,7 +3,10 @@ module Spree
     require 'csv'
     belongs_to :user
 
-    attr_accessor :queries_failed, :records_failed, :records_matched, :records_updated, :touched_product_ids
+    attr_accessor :queries_failed, :records_failed, :records_matched,
+                  :records_updated, :touched_product_ids, :headers,
+                  :primary_key
+
     alias_method :products_touched, :touched_product_ids
     serialize :product_errors
 
@@ -47,10 +50,10 @@ module Spree
               else
                 @headers << nil
               end
-              @primary_key = @headers[0]
+              @primary_key = headers[0]
             end
           else
-            handle_line row, idx
+            handle_line row
             sleep 0
           end
           idx += 1
@@ -64,12 +67,12 @@ module Spree
       end
     end
 
-    def handle_line row, idx
+    def handle_line row
       attr_hash = {}
       lookup_value = (row[0].is_a?(Float) ? row[0].to_i : row[0]).to_s
 
       row.each_with_index do |raw_value, i|
-        next unless raw_value and key = @headers[i] # ignore cell if it has no value
+        next unless raw_value and key = headers[i] # ignore cell if it has no value
 
         value = (raw_value == 'nil') ? nil : raw_value
         attr_hash[key] = value
@@ -77,17 +80,17 @@ module Spree
 
       return if attr_hash.empty?
 
-      if @primary_key == 'id' and lookup_value.empty? and @headers.include? 'product_id'
+      if primary_key == 'id' and lookup_value.empty? and headers.include? 'product_id'
         create_variant(attr_hash)
-      elsif @primary_key == 'id' and lookup_value.empty?
+      elsif primary_key == 'id' and lookup_value.empty?
         create_product(attr_hash)
-      elsif Product.column_names.include?(@primary_key)
-        products = find_products @primary_key, lookup_value
+      elsif Product.column_names.include? primary_key
+        products = find_products primary_key, lookup_value
         update_products(products, attr_hash)
 
         self.touched_product_ids += products.map(&:id)
-      elsif Variant.column_names.include?(@primary_key)
-        products = find_products_by_variant @primary_key, lookup_value
+      elsif Variant.column_names.include? primary_key
+        products = find_products_by_variant primary_key, lookup_value
         update_products(products, attr_hash)
 
         self.touched_product_ids += products.map(&:id)
@@ -96,7 +99,7 @@ module Spree
       end
     end
 
-    def csv_enumerator(&block)
+    def csv_enumerator &block
       if self.class.attachment_definitions[:spreadsheet][:storage] == :s3
         CSV.parse(open spreadsheet.url).each(&block)
       else

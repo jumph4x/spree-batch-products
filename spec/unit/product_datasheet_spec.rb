@@ -97,7 +97,7 @@ describe Spree::ProductDatasheet do
 
     context 'updating Products' do
       before(:each) do
-        @product = FactoryGirl.create(:product, {:name => 'test_product_name', :slug => 'test-product-permalink', :price => 902.10})
+        @product = FactoryGirl.create(:product, {:name => 'test_product_name', :slug => 'test-product-permalink', :price => 777})
         @key = 'slug'
         @value = 'test-product-permalink'
       end
@@ -106,7 +106,6 @@ describe Spree::ProductDatasheet do
 
       it 'should increment @failed_queries when the query returns an empty collection' do
         value = 'chunky bacon chunky bacon chunky bacon'
-        attr_hash = {}
         @product_datasheet.find_products(@key, value)
         @product_datasheet.queries_failed.should == 1
       end
@@ -117,23 +116,25 @@ describe Spree::ProductDatasheet do
       end
 
       it 'should increment @records_updated when the Product successfully updates with the attr_hash and saves' do
-        attr_hash = {:price => 90210.00}
-        @product_datasheet.update_products(products, attr_hash)
-        @product.reload.price.to_f.should == 90210.00
-        @product.master.reload.price.to_f.should == 90210.00
+        attr_hash = {:price => 666}
+        @product.reload.price.to_f.should == 777
+        @product_datasheet.update_products products, attr_hash
+        @product.master.reload.price.to_f.should == 666
         @product_datasheet.records_updated.should == 1
       end
 
       it 'should increment @records_failed when the Product fails to save' do
         attr_hash = {:slug => ''}
-        @product_datasheet.update_products(products, attr_hash)
+        @product_datasheet.update_products products, attr_hash
         @product_datasheet.records_failed.should == 1
       end
 
       it 'should recognize the sentinel string value \'nil\'' do
-        attr_hash = {:description => 'nil'}
-        @product_datasheet.update_products(products, attr_hash)
-        @product_datasheet.records_updated.should == 1
+        @product_datasheet.stub(:headers).and_return([@key, :description])
+        @product_datasheet.stub(:primary_key).and_return(@key)
+        @product_datasheet.touched_product_ids = []
+        row = [@value, 'nil']
+        @product_datasheet.handle_line row
         @product.reload.description.should == nil
       end
     end
@@ -161,11 +162,11 @@ describe Spree::ProductDatasheet do
       end
 
       it 'should increment @records_updated when the Variant successfully updates with the attr_hash and saves' do
-        attr_hash = {:price => 90210.00}
+        attr_hash = {:price => 666}
         @product_datasheet.update_products(products, attr_hash)
         @product_datasheet.records_updated.should == 1
-        @variant.reload.price.to_f.should == 90210.00
-        @product.reload.price.to_f.should == 90210.00
+        @variant.reload.price.to_f.should == 666
+        @product.reload.price.to_f.should == 666
       end
 
     end
