@@ -23,6 +23,7 @@ module Spree
                                     :path => ":rails_root/public/uploads/product_datasheets/:id/:filename"
 
     validates_attachment_presence :spreadsheet
+    validates_attachment_file_name :spreadsheet, :matches => [/csv\Z/]
 
 		scope :not_deleted, -> { where("spree_product_datasheets.deleted_at is NULL") }
 		scope :deleted, -> { where("spree_product_datasheets.deleted_at is NOT NULL") }
