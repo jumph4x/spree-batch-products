@@ -123,20 +123,28 @@ module Spree
     end
 
     def create_product(attr_hash)
-      new_product = Spree::Product.new(attr_hash)
-      unless new_product.save
-        @queries_failed += 1
-        self.product_errors += new_product.errors.to_a.map{|e| "Product #{new_product.sku}: #{e.downcase}"}.uniq
+      begin
+        new_product = Spree::Product.new(attr_hash)
+        if !new_product.save
+          @queries_failed += 1
+          self.product_errors += new_product.errors.to_a.map{|e| "Product #{new_product.sku}: #{e.downcase}"}.uniq
+        end
+      rescue Exception => ex
+        @records_failed += 1
+        self.product_errors += ["Product #{new_product.sku}: #{ex.message}"]
       end
     end
 
     def create_variant(attr_hash)
-      new_variant = Spree::Variant.new(attr_hash)
       begin
-        new_variant.save
-      rescue
+        new_variant = Spree::Variant.new(attr_hash)
+        if !new_variant.save
+          @queries_failed += 1
+          self.product_errors += new_variant.errors.to_a.map{|e| "Variant #{new_variant.sku}: #{e.downcase}"}.uniq
+        end
+      rescue Exception => ex
         @queries_failed += 1
-        self.product_errors += new_variant.errors.to_a.map{|e| "Variant #{new_variant.sku}: #{e.downcase}"}.uniq
+        self.product_errors += ["Variant #{new_variant.sku}: #{ex.message}"]
       end
     end
 
@@ -149,6 +157,9 @@ module Spree
         rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
           @records_failed += 1
           self.product_errors += product.errors.to_a.map{|e| "Product #{product.sku}: #{e.downcase}"}.uniq
+        rescue Exception => ex
+          @records_failed += 1
+          self.product_errors += ["Product #{product.sku}: #{ex.message}"]
         end
       end
     end
