@@ -75,7 +75,7 @@ module Spree
         next unless raw_value and key = headers[i] # ignore cell if it has no value
 
         value = (raw_value == 'nil') ? nil : raw_value
-        attr_hash[key] = value
+        attr_hash[key] = value.strip
       end
 
       return if attr_hash.empty?
