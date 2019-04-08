@@ -43,7 +43,8 @@ module Spree
         csv_enumerator do |row|
           if idx == 0
             @headers = []
-            row.each do |key|
+            row.each do |raw_key|
+              key = conform(raw_key)
               method = "#{key}="
               if Product.new.respond_to?(method) or Variant.new.respond_to?(method)
                 @headers << key
@@ -67,6 +68,12 @@ module Spree
       end
     end
 
+    # fixing strange encoding of Excel, stripping bad characters and whitespace
+    def conform str
+      return nil if str.nil?
+      str.force_encoding('UTF-8').strip
+    end
+
     def handle_line row
       attr_hash = {}
       lookup_value = (row[0].is_a?(Float) ? row[0].to_i : row[0]).to_s
@@ -74,7 +81,7 @@ module Spree
       row.each_with_index do |raw_value, i|
         next unless raw_value and key = headers[i] # ignore cell if it has no value
 
-        value = (raw_value == 'nil') ? nil : raw_value.strip
+        value = (raw_value == 'nil') ? nil : conform(value)
         attr_hash[key] = value
       end
 
