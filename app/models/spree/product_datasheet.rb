@@ -71,7 +71,11 @@ module Spree
     # fixing strange encoding of Excel, stripping bad characters and whitespace
     def conform str
       return nil if str.nil?
-      str.force_encoding('UTF-8').strip
+
+      str = str.force_encoding("UTF-8")
+      str.delete!("\xEF\xBB\xBF") if str.starts_with?("\xEF\xBB\xBF") # handle BOM https://donatstudios.com/CSV-An-Encoding-Nightmare
+      str = str.strip
+      str
     end
 
     def handle_line row
@@ -81,7 +85,7 @@ module Spree
       row.each_with_index do |raw_value, i|
         next unless raw_value and key = headers[i] # ignore cell if it has no value
 
-        value = (raw_value == 'nil') ? nil : conform(value)
+        value = (raw_value == 'nil') ? nil : conform(raw_value)
         attr_hash[key] = value
       end
 
