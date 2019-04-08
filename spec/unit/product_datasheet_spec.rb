@@ -48,20 +48,20 @@ describe Spree::ProductDatasheet do
 
     it 'should return true on call to #processed? when :processed_at is not nil' do
       @product_datasheet.processed_at = Time.now
-      @product_datasheet.processed?.should be_true
+      @product_datasheet.processed?.should be true
     end
 
     it 'should return false on call to #processed? when :processed_at is nil' do
-      @product_datasheet.processed?.should be_false
+      @product_datasheet.processed?.should be false
     end
 
     it 'should return true on call to #deleted? when :deleted_at is not nil' do
       @product_datasheet.deleted_at = Time.now
-      @product_datasheet.deleted?.should be_true
+      @product_datasheet.deleted?.should be true
     end
 
     it 'should return false on call to #deleted? when :deleted_at is nil' do
-      @product_datasheet.deleted?.should be_false
+      @product_datasheet.deleted?.should be false
     end
 
     context 'creating new Products' do

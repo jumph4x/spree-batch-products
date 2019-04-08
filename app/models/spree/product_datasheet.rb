@@ -74,8 +74,8 @@ module Spree
       row.each_with_index do |raw_value, i|
         next unless raw_value and key = headers[i] # ignore cell if it has no value
 
-        value = (raw_value == 'nil') ? nil : raw_value
-        attr_hash[key] = value.strip
+        value = (raw_value == 'nil') ? nil : raw_value.strip
+        attr_hash[key] = value
       end
 
       return if attr_hash.empty?
